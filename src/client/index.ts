@@ -1,68 +1,62 @@
-import { Component, System } from "@ratprez/entm";
-import type { World } from "@ratprez/entm";
+import { System, PlayerData } from "@ratprez/entm";
+import type { EntityId, World } from "@ratprez/entm";
+import { ExampleComponent } from "../shared/ExampleComponent";
 
 declare function __registerModule(init: (world: World) => void): void;
-
-// --- components ---
-
-class ExampleComponent extends Component {
-    public name: string;
-
-    constructor(name: string) {
-        super();
-        this.name = name;
-    }
-}
-
-// --- systems ---
 
 class ExampleSystem extends System {
     override update(deltaTime: number): void {
         // A view returns all entities that have the matching components
         const view = this.m_world.view(ExampleComponent);
 
-        // METHOD 1: for...of loop (creates iterator + result objects)
-        for (const { entityId, exampleComponent } of view) {
-            // Do something with entityId and exampleComponent
-            console.log(`Entity ${entityId}: ${exampleComponent.name}`);
-        }
-
-        // METHOD 2: .each() - recommended for better performance
         view.each(({ entityId, exampleComponent }) => {
-            // Same logic, but .each() is slightly faster because:
-            // - Avoids creating the intermediate iterator object
-            // - Direct function call instead of iterator protocol
-            // - Less memory allocation per iteration
-            console.log(`Entity ${entityId}: ${exampleComponent.name}`);
+            const isRich = this.m_amRich.get(entityId);
+
+            if ((!isRich || isRich == undefined) && exampleComponent.money >= 10) {
+                this.m_amRich.set(entityId, true);
+                console.log(
+                    `${entityId} IS RICH!, whats his bank pin? bankPin: ${exampleComponent.bankPin}... DAMN! It's hidden.`
+                );
+            } else if ((isRich || isRich == undefined) && exampleComponent.money < 10) {
+                this.m_amRich.set(entityId, false);
+                console.log(`${entityId} is poor`);
+            }
+
         });
 
         // TIP: Use for...of when you need early exit (break/continue/return)
         for (const { entityId, exampleComponent } of view) {
-            if (exampleComponent.name === "target") {
+            if (exampleComponent.money > 10) {
                 break; // Can exit early
             }
         }
-
-        // TIP: Use .each() when you process every entity without early exit
-        view.each(({ exampleComponent }) => {
-            exampleComponent.name = exampleComponent.name.toUpperCase();
-        });
     }
+
+// private
+    private m_amRich: Map<EntityId, boolean> = new Map();
 }
 
 // --- init ---
 
 __registerModule((world: World) => {
-    // Create example entities
-    for (let i = 0; i < 2; i++) {
-        const entity = world.createEntity();
+    // Register systems before anything else
+    world.addSystem(new ExampleSystem(world));
 
-        // add example component onto the entity
-        world.addComponent(entity, new ExampleComponent("Entity: " + entity));
+
+
+    const entityId = world.getLocalPlayerEntityId();
+    if (entityId !== null) {
+        console.log("--- THANKYOU FOR TRYING ENTM! ---");
+        console.log(`localEntityId: ${entityId}`);
+        const playerData = world.getComponent(entityId, PlayerData)
+        if (playerData) {
+            console.log(`server data | name: ${playerData.name}, source: ${playerData.source}`);
+        }
     }
 
-    // Register systems
-    world.addSystem(new ExampleSystem(world));
+
 
     // Entities and systems are automatically cleaned up when the resource stops
 });
+
+// DOCS: https://github.com/RatPrez/entm-core/tree/master/docs
