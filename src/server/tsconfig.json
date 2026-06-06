@@ -9,6 +9,6 @@
         "lib": ["ES2020"],
         "baseUrl": ".."
     },
-    "include": ["./**/*"],
+    "include": ["./**/*", "../shared/**/*"],
     "exclude": ["**/node_modules"]
 }

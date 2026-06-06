@@ -2,8 +2,6 @@ import { System, PlayerData } from "@ratprez/entm";
 import type { EntityId, World } from "@ratprez/entm";
 import { ExampleComponent } from "../shared/ExampleComponent";
 
-declare function __registerModule(init: (world: World) => void): void;
-
 class ExampleSystem extends System {
     override update(deltaTime: number): void {
         // A view returns all entities that have the matching components

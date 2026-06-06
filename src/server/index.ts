@@ -1,8 +1,6 @@
 import type { World } from "@ratprez/entm";
 import { ExampleComponent } from "../shared/ExampleComponent";
 
-declare function __registerModule(init: (world: World) => void): void;
-
 // --- init ---
 
 __registerModule((world: World) => {
